@@ -1,15 +1,53 @@
 version: '3.1'
 services:
+  stats-db:
+    ports:
+      - "5430:5432"
+    image: postgres:14-alpine
+    environment:
+      - POSTGRES_DB=stat
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+
+  stats-service:
+    build: statserver/
+    ports:
+      - "9091:9091"
+    environment:
+      - SERVER_PORT=9091
+      - DB_URL=jdbc:postgresql://stats-db:5432/stat
+      - DB_USER=root
+      - DB_PASSWORD=root
+    depends_on:
+      - stats-db
+
   stats-server:
+    build: statgateway/
     ports:
       - "9090:9090"
-
-  stats-db:
-    image: postgres:14-alpine
+    environment:
+      - SERVER_PORT=9090
+      - STATS_SERVICE_URL=http://stats-service:9091
+    depends_on:
+      - stats-service
 
   ewm-service:
+    build: exploreserver/
     ports:
       - "8080:8080"
+    environment:
+      - SERVER_PORT=8080
+      - DB_URL=jdbc:postgresql://ewm-db:5432/ewm
+      - DB_USER=root
+      - DB_PASSWORD=root
+    depends_on:
+      - ewm-db
 
   ewm-db:
+    ports:
+      - "5431:5432"
     image: postgres:14-alpine
+    environment:
+      - POSTGRES_DB=ewm
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
