@@ -2,6 +2,7 @@ package ru.practicum.explorewithme.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.dto.EndpointHitDto;
 import ru.practicum.explorewithme.dto.ViewStatsDto;
@@ -13,14 +14,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 
+import static ru.practicum.explorewithme.utils.Constants.DATE_TIME_FORMAT;
+
 @RestController
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 @RequestMapping(path = "")
 public class StatController {
-    private static final String DATE_TIME_PATTERN = "yyyy-MM-dd HH:mm:ss";
     private final StatService statService;
 
     @PostMapping("/hit")
+    @ResponseStatus(HttpStatus.CREATED)
     public EndpointHitDto createStatHit(@RequestBody EndpointHitDto endpointHitDto) {
         return statService.createStatHit(endpointHitDto);
     }
@@ -37,6 +40,6 @@ public class StatController {
 
     private LocalDateTime getDateFromEncodedString(String date) {
         return LocalDateTime.parse(URLDecoder.decode(date, StandardCharsets.UTF_8),
-                DateTimeFormatter.ofPattern(DATE_TIME_PATTERN));
+                DateTimeFormatter.ofPattern(DATE_TIME_FORMAT));
     }
 }

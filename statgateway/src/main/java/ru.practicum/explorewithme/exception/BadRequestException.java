@@ -1,6 +1,7 @@
-package ru.practicum.explorewithme.exceptions;
+package ru.practicum.explorewithme.exception;
 
 public class BadRequestException extends RuntimeException {
+
     public BadRequestException(String message) {
         super(message);
     }

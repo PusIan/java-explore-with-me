@@ -1,5 +1,8 @@
 package ru.practicum.explorewithme.dto;
 
 public enum RequestStatusDto {
-    PENDING
+    PENDING,
+    REJECTED,
+    CONFIRMED,
+    CANCELED
 }

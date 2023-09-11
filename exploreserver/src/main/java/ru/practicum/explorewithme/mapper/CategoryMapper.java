@@ -6,9 +6,9 @@ import ru.practicum.explorewithme.model.Category;
 
 @Mapper(componentModel = "spring", uses = {ReferenceMapper.class})
 public interface CategoryMapper {
-    CategoryDto CategoryToCategoryDto(Category category);
+    CategoryDto categoryToCategoryDto(Category category);
 
-    Category CategoryDtoToCategory(CategoryDto categoryDto);
+    Category categoryDtoToCategory(CategoryDto categoryDto);
 
     Category toCategoryFromLong(Long id);
 }

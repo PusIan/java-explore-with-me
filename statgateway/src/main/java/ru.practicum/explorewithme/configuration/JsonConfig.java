@@ -11,7 +11,7 @@ import java.time.format.DateTimeFormatter;
 import static ru.practicum.explorewithme.utils.Constants.DATE_TIME_FORMAT;
 
 @Configuration
-public class AppConfig {
+public class JsonConfig {
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jsonCustomizer() {
         return builder -> {
@@ -20,5 +20,4 @@ public class AppConfig {
             builder.deserializers(new LocalDateTimeDeserializer(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)));
         };
     }
-
 }

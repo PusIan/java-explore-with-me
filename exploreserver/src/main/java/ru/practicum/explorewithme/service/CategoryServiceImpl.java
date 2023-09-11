@@ -6,8 +6,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import ru.practicum.explorewithme.dto.CategoryDto;
-import ru.practicum.explorewithme.exceptions.NotFoundException;
+import ru.practicum.explorewithme.exception.NotFoundException;
 import ru.practicum.explorewithme.mapper.CategoryMapper;
+import ru.practicum.explorewithme.model.Category;
 import ru.practicum.explorewithme.repository.CategoryRepository;
 import ru.practicum.explorewithme.utils.Utilities;
 
@@ -22,8 +23,8 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto createCategory(CategoryDto categoryDto) {
-        return categoryMapper.CategoryToCategoryDto(
-                categoryRepository.save(categoryMapper.CategoryDtoToCategory(categoryDto)));
+        return categoryMapper.categoryToCategoryDto(
+                categoryRepository.save(categoryMapper.categoryDtoToCategory(categoryDto)));
     }
 
     @Override
@@ -33,19 +34,19 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public CategoryDto patchCategory(CategoryDto categoryDto) {
-        return categoryMapper.CategoryToCategoryDto(
-                categoryRepository.save(categoryMapper.CategoryDtoToCategory(categoryDto)));
+        return categoryMapper.categoryToCategoryDto(
+                categoryRepository.save(categoryMapper.categoryDtoToCategory(categoryDto)));
     }
 
     @Override
     public Collection<CategoryDto> getAllCategories(Integer from, Integer size) {
         Pageable pageable = Utilities.getPageable(from, size, Sort.by("id").ascending());
-        return categoryRepository.findAll(pageable).stream().map(categoryMapper::CategoryToCategoryDto).collect(Collectors.toList());
+        return categoryRepository.findAll(pageable).stream().map(categoryMapper::categoryToCategoryDto).collect(Collectors.toList());
     }
 
     @Override
     public CategoryDto getCategory(Long catId) {
-        return categoryRepository.findById(catId).map(categoryMapper::CategoryToCategoryDto)
-                .orElseThrow(() -> new NotFoundException(String.format("Category with id %s not found", catId)));
+        return categoryRepository.findById(catId).map(categoryMapper::categoryToCategoryDto)
+                .orElseThrow(() -> new NotFoundException(catId, Category.class));
     }
 }

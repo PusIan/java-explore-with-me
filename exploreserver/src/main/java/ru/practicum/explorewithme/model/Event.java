@@ -1,9 +1,11 @@
 package ru.practicum.explorewithme.model;
 
 import lombok.*;
+import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @Entity
 @Table(name = "event")
@@ -37,7 +39,13 @@ public class Event {
     private LocalDateTime publishedOn;
     private Boolean requestModeration = true;
     @Enumerated(EnumType.STRING)
-    private EventState state;
+    private EventState state = EventState.PENDING;
     @Column(length = 120)
     private String title;
+    @OneToMany(mappedBy = "event", fetch = FetchType.LAZY)
+    private Set<Request> requests;
+    @ManyToMany(mappedBy = "events")
+    private Set<Compilation> compilations;
+    @Formula("(select count(r.id) from Request r where r.event_id = id and r.status = 'CONFIRMED')")
+    private Integer confirmedRequests;
 }

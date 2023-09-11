@@ -10,7 +10,9 @@ import ru.practicum.explorewithme.model.ViewStats;
 import ru.practicum.explorewithme.repository.StatRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.stream.Collectors;
 
 @Service
@@ -28,12 +30,16 @@ public class StatServiceImpl implements StatService {
 
     @Override
     public Collection<ViewStatsDto> getStatHit(LocalDateTime start, LocalDateTime end, Collection<String> uris, boolean unique) {
-        Collection<ViewStats> viewStats;
-        if (unique) {
-            viewStats = statRepository.countStatByStartEndUrisUniqueIps(start, end, uris);
+        Collection<ViewStats> viewStats = new ArrayList<>();
+        if (uris != null) {
+            for (String uri : uris) {
+                viewStats.addAll(statRepository.countStatByStartEndUriUnique(start, end, uri, unique));
+            }
         } else {
-            viewStats = statRepository.countStatByStartEndUris(start, end, uris);
+            viewStats.addAll(statRepository.countStatByStartEndUriUnique(start, end, null, unique));
         }
-        return viewStats.stream().map(statMapper::viewStatsToViewStatsDto).collect(Collectors.toList());
+        return statMapper.viewStatsToViewStatsDtoCollection(viewStats)
+                .stream().sorted(Comparator.comparing(x -> -x.getHits()))
+                .collect(Collectors.toList());
     }
 }

@@ -21,7 +21,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto createUser(UserDto userDto) {
-        return userMapper.UserToUserDto(userRepository.save(userMapper.UserDtoToUser(userDto)));
+        return userMapper.userToUserDto(userRepository.save(userMapper.userDtoToUser(userDto)));
     }
 
     @Override
@@ -33,8 +33,8 @@ public class UserServiceImpl implements UserService {
     public Collection<UserDto> getUsers(Collection<Long> ids, Integer from, Integer size) {
         Pageable pageable = Utilities.getPageable(from, size, Sort.by("id").ascending());
         if (ids == null || ids.isEmpty()) {
-            return userRepository.findAll(pageable).stream().map(userMapper::UserToUserDto).collect(Collectors.toList());
+            return userRepository.findAll(pageable).stream().map(userMapper::userToUserDto).collect(Collectors.toList());
         }
-        return userRepository.findAllByIdIn(ids, pageable).stream().map(userMapper::UserToUserDto).collect(Collectors.toList());
+        return userRepository.findAllByIdIn(ids, pageable).stream().map(userMapper::userToUserDto).collect(Collectors.toList());
     }
 }

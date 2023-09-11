@@ -6,7 +6,8 @@ import javax.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "request")
+@Table(name = "request", uniqueConstraints = {
+        @UniqueConstraint(name = "uq_requester_event", columnNames = {"event_id", "requester_id"})})
 @Getter
 @Setter
 @ToString
@@ -25,5 +26,6 @@ public class Request {
     @ToString.Exclude
     @JoinColumn(name = "requester_id")
     private User requester;
+    @Enumerated(EnumType.STRING)
     private RequestStatus status = RequestStatus.PENDING;
 }
