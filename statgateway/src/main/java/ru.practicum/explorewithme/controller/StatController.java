@@ -38,9 +38,6 @@ public class StatController {
                                              @RequestParam(defaultValue = "false") Boolean unique) throws UnsupportedEncodingException {
         LocalDateTime decodedStart = getDateFromEncodedString(start);
         LocalDateTime decodedEnd = getDateFromEncodedString(end);
-        if (decodedStart != null && decodedEnd != null && decodedStart.isAfter(decodedEnd)) {
-            throw new BadRequestException("start should be before end");
-        }
         return statClient.getStatHit(decodedStart, decodedEnd, uris, unique);
     }
 

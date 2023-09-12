@@ -38,9 +38,6 @@ public class PublicEventController {
                                                  @RequestParam(defaultValue = PAGE_FROM_DEFAULT) Integer from,
                                                  @RequestParam(defaultValue = PAGE_SIZE_DEFAULT) Integer size,
                                                  HttpServletRequest request) {
-        if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
-            throw new BadRequestException("rangeEnd should be after rangeStart");
-        }
         Collection<EventShortDto> eventShortDtos = eventService.searchEventsPublic(text, categories, paid,
                 rangeStart, rangeEnd, onlyAvailable, sort, from, size, request);
         return eventShortDtos;

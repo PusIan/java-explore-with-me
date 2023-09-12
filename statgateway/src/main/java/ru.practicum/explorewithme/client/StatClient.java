@@ -8,6 +8,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.explorewithme.dto.EndpointHitDto;
+import ru.practicum.explorewithme.exception.BadRequestException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -39,6 +40,9 @@ public class StatClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getStatHit(LocalDateTime start, LocalDateTime end, Collection<String> uris, Boolean unique) throws UnsupportedEncodingException {
+        if (start != null && end != null && start.isAfter(end)) {
+            throw new BadRequestException("start should be before end");
+        }
         String encodedStart = encodeQueryDateToString(start);
         String encodedEnd = encodeQueryDateToString(end);
         Map<String, Object> parameters = new HashMap<>();

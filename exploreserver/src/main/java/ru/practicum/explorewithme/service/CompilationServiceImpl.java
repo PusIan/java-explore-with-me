@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.dto.CompilationDto;
 import ru.practicum.explorewithme.dto.NewCompilationDto;
 import ru.practicum.explorewithme.dto.UpdateCompilationRequest;
@@ -27,12 +28,14 @@ public class CompilationServiceImpl implements CompilationService {
     private final EventMapper eventMapper;
 
     @Override
+    @Transactional
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         return compilationMapper.compilationToCompilationDto(
                 compilationRepository.save(compilationMapper.newCompilationDtoToCompilation(newCompilationDto)));
     }
 
     @Override
+    @Transactional
     public CompilationDto patchCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId) {
         Compilation compilation = compilationRepository.findById(compId).orElseThrow(
                 () -> new NotFoundException(compId, Compilation.class)
@@ -44,6 +47,7 @@ public class CompilationServiceImpl implements CompilationService {
     }
 
     @Override
+    @Transactional
     public void deleteCompilation(Long compId) {
         compilationRepository.deleteById(compId);
     }
@@ -51,7 +55,7 @@ public class CompilationServiceImpl implements CompilationService {
     @Override
     public Collection<CompilationDto> getCompilations(Boolean pinned, Integer from, Integer size) {
         Pageable page = Utilities.getPageable(from, size, Sort.by("id").ascending());
-        return compilationRepository.findAllByPinnedOrPinnedIsNull(pinned, page)
+        return compilationRepository.findAllByPinned(pinned, page)
                 .stream().map(compilationMapper::compilationToCompilationDto)
                 .collect(Collectors.toList());
     }

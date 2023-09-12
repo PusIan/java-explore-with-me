@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.dto.CategoryDto;
 import ru.practicum.explorewithme.exception.NotFoundException;
 import ru.practicum.explorewithme.mapper.CategoryMapper;
@@ -22,17 +23,20 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryMapper categoryMapper;
 
     @Override
+    @Transactional
     public CategoryDto createCategory(CategoryDto categoryDto) {
         return categoryMapper.categoryToCategoryDto(
                 categoryRepository.save(categoryMapper.categoryDtoToCategory(categoryDto)));
     }
 
     @Override
+    @Transactional
     public void deleteCategory(Long catId) {
         categoryRepository.deleteById(catId);
     }
 
     @Override
+    @Transactional
     public CategoryDto patchCategory(CategoryDto categoryDto) {
         return categoryMapper.categoryToCategoryDto(
                 categoryRepository.save(categoryMapper.categoryDtoToCategory(categoryDto)));

@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.explorewithme.dto.*;
+import ru.practicum.explorewithme.exception.BadRequestException;
 import ru.practicum.explorewithme.exception.ConflictException;
 import ru.practicum.explorewithme.exception.NotFoundException;
 import ru.practicum.explorewithme.mapper.CategoryMapper;
@@ -38,6 +40,7 @@ public class EventServiceImpl implements EventService {
     private final StatClient statClient;
 
     @Override
+    @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
         Event savedEvent = eventRepository.save(eventMapper.newEventDtoToEvent(newEventDto, userId, new Event()));
         return eventMapper.eventToEventFullDto(savedEvent);
@@ -59,6 +62,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto patchEventByUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(eventId, Event.class)
@@ -88,6 +92,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventRequestStatusUpdateResult patchRequests(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest, Long userId, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(eventId, Event.class));
         if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
@@ -140,6 +145,7 @@ public class EventServiceImpl implements EventService {
     }
 
     @Override
+    @Transactional
     public EventFullDto patchEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(eventId, Event.class));
         if (updateEventAdminRequest.getStateAction() == UpdateEventAdminRequestStateAction.PUBLISH_EVENT) {
@@ -175,6 +181,9 @@ public class EventServiceImpl implements EventService {
     public Collection<EventShortDto> searchEventsPublic(String text, Collection<Long> categories, Boolean paid,
                                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable,
                                                         EventSearchOrderBy sort, Integer from, Integer size, HttpServletRequest request) {
+        if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
+            throw new BadRequestException("rangeEnd should be after rangeStart");
+        }
         Sort processedSort = Sort.unsorted();
         switch (sort) {
             case EVENT_DATE:
