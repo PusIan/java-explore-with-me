@@ -13,9 +13,9 @@ public interface StatRepository extends JpaRepository<EndpointHit, Long> {
             "(case when :unique = true then count(distinct(eh.ip)) else count(eh.id) end))" +
             "from EndpointHit as eh " +
             "where (eh.timestamp >= :start or cast(:start as date) is null) " +
-            "and (eh.timestamp < :end or cast(:end as date) is null) " +
-            "and (eh.uri like :uri||'%' or :uri is null ) " +
+            "and (eh.timestamp <= :end or cast(:end as date) is null) " +
+            "and (eh.uri in :uris or :uris is null ) " +
             "group by eh.app, eh.uri " +
             "order by (case when :unique = true then count(distinct(eh.ip)) else count(eh.id) end) desc")
-    Collection<ViewStats> countStatByStartEndUriUnique(LocalDateTime start, LocalDateTime end, String uri, Boolean unique);
+    Collection<ViewStats> countStatByStartEndUriUnique(LocalDateTime start, LocalDateTime end, Collection<String> uris, Boolean unique);
 }

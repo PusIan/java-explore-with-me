@@ -9,7 +9,7 @@ import java.util.Collection;
 public interface CompilationService {
     CompilationDto createCompilation(NewCompilationDto newCompilationDto);
 
-    CompilationDto patchCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId);
+    CompilationDto updateCompilation(UpdateCompilationRequest updateCompilationRequest, Long compId);
 
     void deleteCompilation(Long compId);
 

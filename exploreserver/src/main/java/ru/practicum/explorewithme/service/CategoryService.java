@@ -9,7 +9,7 @@ public interface CategoryService {
 
     void deleteCategory(Long catId);
 
-    CategoryDto patchCategory(CategoryDto categoryDto);
+    CategoryDto updateCategory(CategoryDto categoryDto);
 
     Collection<CategoryDto> getAllCategories(Integer from, Integer size);
 

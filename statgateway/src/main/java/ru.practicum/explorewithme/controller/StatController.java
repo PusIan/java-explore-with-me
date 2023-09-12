@@ -8,7 +8,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.client.StatClient;
 import ru.practicum.explorewithme.dto.EndpointHitDto;
-import ru.practicum.explorewithme.exception.BadRequestException;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;

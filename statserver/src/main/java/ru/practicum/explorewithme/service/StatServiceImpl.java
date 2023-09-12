@@ -34,9 +34,7 @@ public class StatServiceImpl implements StatService {
     public Collection<ViewStatsDto> getStatHit(LocalDateTime start, LocalDateTime end, Collection<String> uris, boolean unique) {
         Collection<ViewStats> viewStats = new ArrayList<>();
         if (uris != null) {
-            for (String uri : uris) {
-                viewStats.addAll(statRepository.countStatByStartEndUriUnique(start, end, uri, unique));
-            }
+            viewStats.addAll(statRepository.countStatByStartEndUriUnique(start, end, uris, unique));
         } else {
             viewStats.addAll(statRepository.countStatByStartEndUriUnique(start, end, null, unique));
         }

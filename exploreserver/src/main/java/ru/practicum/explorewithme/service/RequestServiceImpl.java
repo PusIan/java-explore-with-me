@@ -8,11 +8,10 @@ import ru.practicum.explorewithme.dto.ParticipationRequestDto;
 import ru.practicum.explorewithme.exception.ConflictException;
 import ru.practicum.explorewithme.exception.NotFoundException;
 import ru.practicum.explorewithme.mapper.RequestMapper;
-import ru.practicum.explorewithme.model.Event;
-import ru.practicum.explorewithme.model.EventState;
-import ru.practicum.explorewithme.model.Request;
-import ru.practicum.explorewithme.model.RequestStatus;
+import ru.practicum.explorewithme.model.*;
+import ru.practicum.explorewithme.repository.EventRepository;
 import ru.practicum.explorewithme.repository.RequestRepository;
+import ru.practicum.explorewithme.repository.UserRepository;
 
 import java.util.Collection;
 import java.util.Objects;
@@ -22,13 +21,17 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class RequestServiceImpl implements RequestService {
     private final RequestRepository requestRepository;
+    private final UserRepository userRepository;
+    private final EventRepository eventRepository;
     private final RequestMapper requestMapper;
 
     @Override
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        Request request = requestMapper.parametersToRequest(userId, eventId);
-        Event event = request.getEvent();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException(userId, User.class));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException(eventId, Event.class));
         if (event.getState() != EventState.PUBLISHED) {
             throw new ConflictException("request can be created only for published event");
         }
@@ -39,10 +42,13 @@ public class RequestServiceImpl implements RequestService {
                 && Objects.equals(event.getConfirmedRequests(), event.getParticipantLimit())) {
             throw new ConflictException("no free slots in event");
         }
+        Request request = new Request();
         if (event.getParticipantLimit() == 0 ||
                 !event.getRequestModeration()) {
             request.setStatus(RequestStatus.CONFIRMED);
         }
+        request.setRequester(user);
+        request.setEvent(event);
 
         return requestMapper.requestToParticipationRequestDto(
                 requestRepository.save(request));

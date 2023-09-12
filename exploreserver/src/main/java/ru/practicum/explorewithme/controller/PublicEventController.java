@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.explorewithme.dto.EventFullDto;
 import ru.practicum.explorewithme.dto.EventSearchOrderBy;
 import ru.practicum.explorewithme.dto.EventShortDto;
-import ru.practicum.explorewithme.exception.BadRequestException;
 import ru.practicum.explorewithme.service.EventService;
 import ru.practicum.explorewithme.statclient.StatClient;
 

@@ -37,7 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     @Transactional
-    public CategoryDto patchCategory(CategoryDto categoryDto) {
+    public CategoryDto updateCategory(CategoryDto categoryDto) {
         return categoryMapper.categoryToCategoryDto(
                 categoryRepository.save(categoryMapper.categoryDtoToCategory(categoryDto)));
     }

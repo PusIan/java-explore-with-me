@@ -14,12 +14,11 @@ import ru.practicum.explorewithme.mapper.CategoryMapper;
 import ru.practicum.explorewithme.mapper.EventMapper;
 import ru.practicum.explorewithme.mapper.LocationMapper;
 import ru.practicum.explorewithme.mapper.RequestMapper;
-import ru.practicum.explorewithme.model.Event;
-import ru.practicum.explorewithme.model.EventState;
-import ru.practicum.explorewithme.model.Request;
-import ru.practicum.explorewithme.model.RequestStatus;
+import ru.practicum.explorewithme.model.*;
+import ru.practicum.explorewithme.repository.CategoryRepository;
 import ru.practicum.explorewithme.repository.EventRepository;
 import ru.practicum.explorewithme.repository.RequestRepository;
+import ru.practicum.explorewithme.repository.UserRepository;
 import ru.practicum.explorewithme.statclient.StatClient;
 import ru.practicum.explorewithme.utils.Utilities;
 
@@ -32,6 +31,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     private final RequestRepository requestRepository;
     private final EventMapper eventMapper;
     private final RequestMapper requestMapper;
@@ -42,7 +43,10 @@ public class EventServiceImpl implements EventService {
     @Override
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto newEventDto) {
-        Event savedEvent = eventRepository.save(eventMapper.newEventDtoToEvent(newEventDto, userId, new Event()));
+        User user = userRepository.findById(userId).orElseThrow(() -> new NotFoundException(userId, User.class));
+        Category category = categoryRepository.findById(newEventDto.getCategory())
+                .orElseThrow(() -> new NotFoundException(newEventDto.getCategory(), Category.class));
+        Event savedEvent = eventRepository.save(eventMapper.newEventDtoToEvent(newEventDto, category, user));
         return eventMapper.eventToEventFullDto(savedEvent);
     }
 
@@ -63,7 +67,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto patchEventByUser(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
+    public EventFullDto updateEventById(Long userId, Long eventId, UpdateEventUserRequest updateEventUserRequest) {
         Event event = eventRepository.findById(eventId).orElseThrow(
                 () -> new NotFoundException(eventId, Event.class)
         );
@@ -81,7 +85,9 @@ public class EventServiceImpl implements EventService {
         }
         Optional.ofNullable(updateEventUserRequest.getEventDate()).ifPresent(event::setEventDate);
         Optional.ofNullable(updateEventUserRequest.getAnnotation()).ifPresent(event::setAnnotation);
-        Optional.ofNullable(updateEventUserRequest.getCategory()).ifPresent(categoryMapper::toCategoryFromLong);
+        Optional.ofNullable(updateEventUserRequest.getCategory()).ifPresent(
+                categoryId -> event.setCategory(categoryRepository.findById(categoryId).orElseThrow(
+                        () -> new NotFoundException(categoryId, Category.class))));
         Optional.ofNullable(updateEventUserRequest.getRequestModeration()).ifPresent(event::setRequestModeration);
         Optional.ofNullable(updateEventUserRequest.getPaid()).ifPresent(event::setPaid);
         Optional.ofNullable(updateEventUserRequest.getDescription()).ifPresent(event::setDescription);
@@ -93,7 +99,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult patchRequests(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest, Long userId, Long eventId) {
+    public EventRequestStatusUpdateResult updateRequests(EventRequestStatusUpdateRequest eventRequestStatusUpdateRequest, Long userId, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(eventId, Event.class));
         if (event.getParticipantLimit() == 0 || !event.getRequestModeration()) {
             throw new ConflictException("No need to confirm Requests for Event with participantLimit == 0 or requestModeration == false");
@@ -146,7 +152,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public EventFullDto patchEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId) {
+    public EventFullDto updateEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId) {
         Event event = eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException(eventId, Event.class));
         if (updateEventAdminRequest.getStateAction() == UpdateEventAdminRequestStateAction.PUBLISH_EVENT) {
             if (event.getState() != EventState.PENDING) {
@@ -167,7 +173,9 @@ public class EventServiceImpl implements EventService {
         }
         Optional.ofNullable(updateEventAdminRequest.getEventDate()).ifPresent(event::setEventDate);
         Optional.ofNullable(updateEventAdminRequest.getAnnotation()).ifPresent(event::setAnnotation);
-        Optional.ofNullable(updateEventAdminRequest.getCategory()).ifPresent(categoryMapper::toCategoryFromLong);
+        Optional.ofNullable(updateEventAdminRequest.getCategory()).ifPresent(
+                categoryId -> event.setCategory(categoryRepository.findById(categoryId).orElseThrow(
+                        () -> new NotFoundException(categoryId, Category.class))));
         Optional.ofNullable(updateEventAdminRequest.getRequestModeration()).ifPresent(event::setRequestModeration);
         Optional.ofNullable(updateEventAdminRequest.getPaid()).ifPresent(event::setPaid);
         Optional.ofNullable(updateEventAdminRequest.getDescription()).ifPresent(event::setDescription);
@@ -201,7 +209,6 @@ public class EventServiceImpl implements EventService {
                 .stream().map(eventMapper::eventToEventShortDto)
                 .collect(Collectors.toList());
         statClient.createStatHit(request.getRemoteAddr(), request.getRequestURI());
-        statClient.createStatHitForEvents(request.getRemoteAddr(), events.stream().map(Event::getId).collect(Collectors.toList()));
         Map<Long, Long> views = statClient.getViewsForEventIds(events);
         fillEventsShortDto(eventShortDtos, views);
         if (sort.equals(EventSearchOrderBy.VIEWS)) {
@@ -210,6 +217,8 @@ public class EventServiceImpl implements EventService {
                     .collect(Collectors.toList())
                     .subList(from, from + size + 1);
         }
+        statClient.createStatHitForEvents(request.getRemoteAddr(), eventShortDtos
+                .stream().map(EventShortDto::getId).collect(Collectors.toList()));
         return eventShortDtos;
     }
 
