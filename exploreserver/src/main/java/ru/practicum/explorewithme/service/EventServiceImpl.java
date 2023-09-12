@@ -188,7 +188,7 @@ public class EventServiceImpl implements EventService {
     @Override
     public Collection<EventShortDto> searchEventsPublic(String text, Collection<Long> categories, Boolean paid,
                                                         LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable,
-                                                        EventSearchOrderBy sort, Integer from, Integer size, HttpServletRequest request) {
+                                                        EventSearchOrderBy sort, Integer from, Integer size, HttpServletRequest request, Integer ratingFrom, Integer ratingTo) {
         if (rangeEnd != null && rangeStart != null && rangeEnd.isBefore(rangeStart)) {
             throw new BadRequestException("rangeEnd should be after rangeStart");
         }
@@ -196,6 +196,9 @@ public class EventServiceImpl implements EventService {
         switch (sort) {
             case EVENT_DATE:
                 processedSort = Sort.by("eventDate").ascending();
+                break;
+            case RATING:
+                processedSort = Sort.by("rating").descending();
                 break;
             case VIEWS:
                 processedSort = Sort.unsorted();

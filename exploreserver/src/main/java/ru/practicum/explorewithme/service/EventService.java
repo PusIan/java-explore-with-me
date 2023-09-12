@@ -24,7 +24,7 @@ public interface EventService {
 
     EventFullDto updateEventByAdmin(UpdateEventAdminRequest updateEventAdminRequest, Long eventId);
 
-    Collection<EventShortDto> searchEventsPublic(String text, Collection<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, EventSearchOrderBy sort, Integer from, Integer size, HttpServletRequest request);
+    Collection<EventShortDto> searchEventsPublic(String text, Collection<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, EventSearchOrderBy sort, Integer from, Integer size, HttpServletRequest request, Integer ratingFrom, Integer ratingTo);
 
     EventFullDto getEventByIdPublic(Long id, HttpServletRequest request);
 }
