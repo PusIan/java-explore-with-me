@@ -67,7 +67,7 @@ public class StatClient extends BaseClient {
         parameters.put("start", encodedStart);
         parameters.put("end", encodedEnd);
         parameters.put("unique", unique);
-        ResponseEntity<Object> result = null;
+        ResponseEntity<Object> result;
         if (uris != null) {
             parameters.put("uris", String.join(",", uris));
             result = get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
@@ -81,7 +81,7 @@ public class StatClient extends BaseClient {
         return URLEncoder.encode(date.format(DateTimeFormatter.ofPattern(DATE_TIME_FORMAT)), StandardCharsets.UTF_8);
     }
 
-    public Map<Long, Long> getViewsForEventIds(Collection<Event> events) {
+    public Map<Long, Long> getViewsForEvents(Collection<Event> events) {
         HashMap<Long, Long> result = new HashMap<>();
         ObjectMapper objectMapper = new ObjectMapper();
         try {

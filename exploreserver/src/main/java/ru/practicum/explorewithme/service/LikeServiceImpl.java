@@ -51,8 +51,6 @@ public class LikeServiceImpl implements LikeService {
                 .isPositive(like)
                 .build();
         likeRepository.save(likeForSaving);
-        event.setRating(event.getRating() + (like ? 1 : -1));
-        eventRepository.save(event);
     }
 
     @Override
@@ -69,8 +67,6 @@ public class LikeServiceImpl implements LikeService {
         Like likeForDeletion = likeRepository.findLikeByEvent_IdAndUser_IdAndIsPositive(eventId, userId, like)
                 .orElseThrow(() -> new ConflictException("no " + getLikeString(like) + " is present"));
         likeRepository.delete(likeForDeletion);
-        event.setRating(event.getRating() + (like ? 1 : -1));
-        eventRepository.save(event);
     }
 
     @Override
@@ -87,7 +83,7 @@ public class LikeServiceImpl implements LikeService {
                 .stream().map(Like::getUser)
                 .map(userMapper::userToUserDto)
                 .collect(Collectors.toList());
-        Integer userDislikesCnt = likeRepository.countLikesByEvent_IdAndIsPositive(id, true);
+        Integer userDislikesCnt = likeRepository.countLikesByEvent_IdAndIsPositive(id, false);
         return EventUserLikes.builder()
                 .userLikesCnt(userLikesCnt)
                 .userLikes(userLikes)

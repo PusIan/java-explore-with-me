@@ -47,7 +47,8 @@ public class EventServiceImpl implements EventService {
         Category category = categoryRepository.findById(newEventDto.getCategory())
                 .orElseThrow(() -> new NotFoundException(newEventDto.getCategory(), Category.class));
         Event savedEvent = eventRepository.save(eventMapper.newEventDtoToEvent(newEventDto, category, user));
-        return eventMapper.eventToEventFullDto(savedEvent);
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(savedEvent);
+        return eventFullDto;
     }
 
     @Override
@@ -60,9 +61,10 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public EventFullDto getEventById(Long userId, Long eventId) {
-        return eventRepository.findByInitiator_IdAndId(userId, eventId)
+        EventFullDto eventFullDto = eventRepository.findByInitiator_IdAndId(userId, eventId)
                 .map(eventMapper::eventToEventFullDto)
                 .orElseThrow(() -> new NotFoundException(String.format("event %s not found for user %s", eventId, userId)));
+        return eventFullDto;
     }
 
     @Override
@@ -94,7 +96,8 @@ public class EventServiceImpl implements EventService {
         Optional.ofNullable(updateEventUserRequest.getLocationDto()).ifPresent(locationMapper::locationDtoToLocation);
         Optional.ofNullable(updateEventUserRequest.getTitle()).ifPresent(event::setTitle);
         Optional.ofNullable(updateEventUserRequest.getParticipantLimit()).ifPresent(event::setParticipantLimit);
-        return eventMapper.eventToEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(eventRepository.save(event));
+        return eventFullDto;
     }
 
     @Override
@@ -145,9 +148,10 @@ public class EventServiceImpl implements EventService {
     public Collection<EventFullDto> searchEvents(Collection<Long> users, Collection<EventState> states, Collection<Long> categories,
                                                  LocalDateTime rangeStart, LocalDateTime rangeEnd, Integer from, Integer size) {
         Pageable page = Utilities.getPageable(from, size, Sort.by("id").ascending());
-        return eventRepository.searchEvents(users, states, categories, rangeStart, rangeEnd, page)
+        Collection<EventFullDto> eventFullDtos = eventRepository.searchEvents(users, states, categories, rangeStart, rangeEnd, page)
                 .stream().map(eventMapper::eventToEventFullDto)
                 .collect(Collectors.toList());
+        return eventFullDtos;
     }
 
     @Override
@@ -182,7 +186,8 @@ public class EventServiceImpl implements EventService {
         Optional.ofNullable(updateEventAdminRequest.getLocationDto()).ifPresent(locationMapper::locationDtoToLocation);
         Optional.ofNullable(updateEventAdminRequest.getTitle()).ifPresent(event::setTitle);
         Optional.ofNullable(updateEventAdminRequest.getParticipantLimit()).ifPresent(event::setParticipantLimit);
-        return eventMapper.eventToEventFullDto(eventRepository.save(event));
+        EventFullDto eventFullDto = eventMapper.eventToEventFullDto(eventRepository.save(event));
+        return eventFullDto;
     }
 
     @Override
@@ -208,12 +213,11 @@ public class EventServiceImpl implements EventService {
         rangeStart = Optional.ofNullable(rangeStart).orElse(LocalDateTime.now());
         Collection<Event> events = eventRepository.searchEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable, pageable)
                 .toList();
+        fillViewsForEvents(events);
         Collection<EventShortDto> eventShortDtos = events
                 .stream().map(eventMapper::eventToEventShortDto)
                 .collect(Collectors.toList());
         statClient.createStatHit(request.getRemoteAddr(), request.getRequestURI());
-        Map<Long, Long> views = statClient.getViewsForEventIds(events);
-        fillEventsShortDto(eventShortDtos, views);
         if (sort.equals(EventSearchOrderBy.VIEWS)) {
             eventShortDtos = eventShortDtos
                     .stream().sorted(Comparator.comparing(x -> -x.getViews()))
@@ -230,22 +234,20 @@ public class EventServiceImpl implements EventService {
         Event event = eventRepository.findById(id)
                 .filter(x -> x.getState().equals(EventState.PUBLISHED))
                 .orElseThrow(() -> new NotFoundException(id, Event.class));
+        fillViewForEvent(event);
         EventFullDto eventFullDto = eventMapper.eventToEventFullDto(event);
         statClient.createStatHit(request.getRemoteAddr(), request.getRequestURI());
-        Map<Long, Long> views = statClient.getViewsForEventIds(List.of(event));
-        fillEventsFullDto(List.of(eventFullDto), views);
         return eventFullDto;
     }
 
-    private void fillEventsFullDto(Collection<EventFullDto> eventFullDtos, Map<Long, Long> views) {
-        for (EventFullDto eventFullDto : eventFullDtos) {
-            eventFullDto.setViews(views.getOrDefault(eventFullDto.getId(), 0L));
-        }
+    private void fillViewForEvent(Event event) {
+        fillViewsForEvents(List.of(event));
     }
 
-    private void fillEventsShortDto(Collection<EventShortDto> eventShortDtos, Map<Long, Long> views) {
-        for (EventShortDto eventShortDto : eventShortDtos) {
-            eventShortDto.setViews(views.getOrDefault(eventShortDto.getId(), 0L));
+    private void fillViewsForEvents(Collection<Event> events) {
+        Map<Long, Long> views = statClient.getViewsForEvents(events);
+        for (Event event : events) {
+            event.setViews(views.getOrDefault(event.getId(), 0L));
         }
     }
 }
