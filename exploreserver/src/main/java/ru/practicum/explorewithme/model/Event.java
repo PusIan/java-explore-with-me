@@ -48,7 +48,6 @@ public class Event {
     private Set<Compilation> compilations;
     @Formula("(select count(r.id) from Request r where r.event_id = id and r.status = 'CONFIRMED')")
     private Integer confirmedRequests;
-    @Formula("(select sum(case when l.is_positive then 1 else -1 end) from _Like l where l.event_id = id)")
     private Integer rating = 0;
     @Transient
     private Long views;

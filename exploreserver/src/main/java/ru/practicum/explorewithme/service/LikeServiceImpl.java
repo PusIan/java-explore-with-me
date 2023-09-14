@@ -34,7 +34,7 @@ public class LikeServiceImpl implements LikeService {
     @Override
     @Transactional
     public void addLikeToEvent(Long userId, Long eventId, Boolean like) {
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findEventById(eventId)
                 .orElseThrow(() -> new NotFoundException(eventId, Event.class));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(userId, User.class));
@@ -51,12 +51,16 @@ public class LikeServiceImpl implements LikeService {
                 .isPositive(like)
                 .build();
         likeRepository.save(likeForSaving);
+        Integer rating = event.getRating();
+        ;
+        event.setRating(rating + (like ? 1 : -1));
+        eventRepository.save(event);
     }
 
     @Override
     @Transactional
     public void deleteLikeFromEvent(Long userId, Long eventId, Boolean like) {
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findEventById(eventId)
                 .orElseThrow(() -> new NotFoundException(eventId, Event.class));
         userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException(userId, User.class));
@@ -67,6 +71,9 @@ public class LikeServiceImpl implements LikeService {
         Like likeForDeletion = likeRepository.findLikeByEvent_IdAndUser_IdAndIsPositive(eventId, userId, like)
                 .orElseThrow(() -> new ConflictException("no " + getLikeString(like) + " is present"));
         likeRepository.delete(likeForDeletion);
+        Integer rating = event.getRating();
+        event.setRating(rating + (like ? -1 : 1));
+        eventRepository.save(event);
     }
 
     @Override

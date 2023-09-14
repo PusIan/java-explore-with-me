@@ -3,10 +3,12 @@ package ru.practicum.explorewithme.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import ru.practicum.explorewithme.model.Event;
 import ru.practicum.explorewithme.model.EventState;
 
+import javax.persistence.LockModeType;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Optional;
@@ -37,4 +39,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "    or e.confirmedRequests < e.participantLimit)")
     Page<Event> searchEventsPublic(String text, Collection<Long> categories, Boolean paid, LocalDateTime rangeStart,
                                    LocalDateTime rangeEnd, Boolean onlyAvailable, Pageable pageable);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    Optional<Event> findEventById(Long id);
 }

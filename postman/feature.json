@@ -1,8 +1,9 @@
 {
 	"info": {
-		"_postman_id": "7bcb5cc0-6d77-4bd4-afd7-7ef90061ed3c",
+		"_postman_id": "46d39618-1839-4f92-9f87-ca2211e4f192",
 		"name": "\"Explore with me\" Likes feature",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "29100413"
 	},
 	"item": [
 		{
@@ -599,12 +600,14 @@
 							"    try {\r",
 							"        userLike1 = await api.addUser(rnd.getUser());\r",
 							"        userLike2 = await api.addUser(rnd.getUser());\r",
+							"        userLike3 = await api.addUser(rnd.getUser());\r",
 							"        userDisLike3 = await api.addUser(rnd.getUser());\r",
 							"        category = await api.addCategory(rnd.getCategory());\r",
 							"        event = await api.addEvent(userLike1.id, rnd.getEvent(category.id));\r",
 							"        await api.publishEvent(event.id);\r",
 							"        await api.addLike(event.id, userLike1.id);\r",
 							"        await api.addLike(event.id, userLike2.id);\r",
+							"        await api.addLike(event.id, userLike3.id);\r",
 							"        await api.addDisLike(event.id, userDisLike3.id);\r",
 							"        pm.collectionVariables.set('eid', event.id);\r",
 							"    } catch(err) {\r",
@@ -612,7 +615,7 @@
 							"    }\r",
 							"};\r",
 							"\r",
-							"const interval = setInterval(() => {}, 1000);\r",
+							"const interval = setInterval(() => {}, 2000);\r",
 							"\r",
 							"setTimeout(async () => \r",
 							"    {\r",
@@ -646,8 +649,8 @@
 							"pm.expect(target).to.have.property('rating');\r",
 							"});\r",
 							"\r",
-							"pm.test(\"Данные в ответе должны соответствовать рейтингу 1: 2 лайка минус 1 дизлайк\", function () {\r",
-							"    pm.expect(1).equal(target.rating, 'Рейтинг должен быть равен 1');\r",
+							"pm.test(\"Данные в ответе должны соответствовать рейтингу 2: 3 лайка минус 1 дизлайк\", function () {\r",
+							"    pm.expect(2).equal(target.rating, 'Рейтинг должен быть равен 2');\r",
 							"});"
 						],
 						"type": "text/javascript"
