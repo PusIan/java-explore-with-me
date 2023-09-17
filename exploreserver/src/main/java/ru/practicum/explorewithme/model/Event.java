@@ -48,4 +48,7 @@ public class Event {
     private Set<Compilation> compilations;
     @Formula("(select count(r.id) from Request r where r.event_id = id and r.status = 'CONFIRMED')")
     private Integer confirmedRequests;
+    private Integer rating = 0;
+    @Transient
+    private Long views;
 }
